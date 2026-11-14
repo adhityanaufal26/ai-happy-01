@@ -1,10 +1,26 @@
-# ai-happy-01 entry: copy the happy picture entry.png beside this file to /output/entry.png.
-# A plain byte-for-byte copy, so both grader runs write identical bytes.
+#!/usr/bin/env python3
+"""ai-happy-01 entry (Python 3.13, standard library only).
+
+The image is the entry.png beside this file: a flour-dusted little robot
+proudly presenting a tray of star-shaped cookies to a laughing little girl
+in a sunlit kitchen. The program copies it to /output/entry.png.
+
+Outside the grader's container, MAKEFUN_OUTPUT_DIR stands in for /output:
+    mkdir -p out && MAKEFUN_OUTPUT_DIR=out python3 main.py
+"""
+
 import os
 import shutil
+from pathlib import Path
 
-src = os.path.join(os.path.dirname(os.path.abspath(__file__)), "entry.png")
-out = os.path.join(os.environ.get("MAKEFUN_OUTPUT_DIR", "/output"), "entry.png")
-os.makedirs(os.path.dirname(out), exist_ok=True)
-shutil.copyfile(src, out)
-assert os.path.getsize(src) == os.path.getsize(out)
+ENTRY = Path(__file__).resolve().parent / "entry.png"
+
+output_dir = Path(os.environ.get("MAKEFUN_OUTPUT_DIR") or "/output")
+output_dir.mkdir(parents=True, exist_ok=True)
+dest = output_dir / "entry.png"
+shutil.copyfile(ENTRY, dest)
+# The grader runs this twice and both runs must write the same bytes:
+# copyfile is deterministic, and this guard fails loudly if anything
+# ever made the copy differ from the image shipped in the repository.
+if dest.read_bytes() != ENTRY.read_bytes():
+    raise SystemExit("entry.png copy differs from the repository image")
